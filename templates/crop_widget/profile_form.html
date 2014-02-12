@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block extracss %}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/imgareaselect-default.css" />
+{% endblock %}
+{% block extrajs %}
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.imgareaselect.pack.js"></script>
+  <script>
+        function crop_change(img, selection){
+            $('#id_avatar_x').val(selection.x1);
+            $('#id_avatar_y').val(selection.y1);
+            $('#id_avatar_width').val(selection.width);
+            $('#id_avatar_height').val(selection.height);
+        }
+
+        function readImage(input) {
+            if ( input.files && input.files[0] ) {
+                var FR= new FileReader();
+                FR.onload = function(e) {
+                    $('#crop_image').css('display', '');
+                     $('#profile_image').attr( "src", "" );
+                     $('#profile_image').attr( "src", e.target.result );
+
+                     var mw = Math.min($('img#profile_image').width(), $('img#profile_image').height());
+
+                     var x1 = ($('img#profile_image').width()-mw)/2;
+                     var y1 =($('img#profile_image').height()-mw)/2;
+                     $('img#profile_image').imgAreaSelect({
+                         onSelectChange: crop_change,
+                         handles: true,
+                         aspectRatio: '1:1',
+                         x1: x1,
+                         y1: y1,
+                         x2: x1+mw,
+                         y2: y1+mw
+                         //onSelectEnd: someFunction
+                     });
+                };
+                FR.readAsDataURL( input.files[0] );
+            }
+            else{
+                alert('ooopss');
+            }
+        }
+        $(function() {
+            $("#id_image").change(function(){
+                readImage( this );
+            });
+            {% if object %}
+                $('img#profile_image').imgAreaSelect({
+                     onSelectChange: crop_change,
+                     handles: true,
+                     aspectRatio: '1:1',
+                     x1: {{ profile.avatar_x }},
+                     y1: {{ profile.avatar_y }},
+                     x2: {{ profile.avatar_x }}+{{ profile.avatar_width }},
+                     y2: {{ profile.avatar_y }}+{{ profile.avatar_height }}
+                     //onSelectEnd: someFunction
+                 });
+            {% endif %}
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<h1>Add Profile</h1>
+<form action="" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <ul>
+    {{ form.as_ul }}
+  </ul>
+    {% if object %}
+        <img id="profile_image" src="{{ MEDIA_URL }}{{ profile.image }}" />
+    {% else %}
+        <img id="profile_image" />
+    {% endif %}
+  <input id="save_profile" type="submit" value="Save" />
+</form>
+
+<a href="{% url "profile-list" %}">back to list</a>
+
+
+{% endblock %}

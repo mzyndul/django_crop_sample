@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table>
+    {% for profile in object_list %}
+        <tr>
+            <td>{{ profile.id }}</td>
+            <td><img src="{{ MEDIA_URL }}{{ profile.avatar }}" /></td>
+            <td><a href="{% url "profile-update" profile.id %}">Edit</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+    <a href="{% url "profile-create" %}">Add Profile</a>
+{% endblock %}
