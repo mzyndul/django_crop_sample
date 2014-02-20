@@ -2,7 +2,7 @@ django_crop_sample
 ==================
 
 INSTALL
-==================
+==================<br/>
 create new virtualenv
 pip install -r requirements.txt
 add write permission to media folder
