@@ -8,12 +8,10 @@ from PIL import Image
 class ProfileForm (forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
-        '''
         self.fields['avatar_x'].widget = forms.HiddenInput()
         self.fields['avatar_y'].widget = forms.HiddenInput()
         self.fields['avatar_width'].widget = forms.HiddenInput()
         self.fields['avatar_height'].widget = forms.HiddenInput()
-        '''
 
     def save(self, commit=True):
         obj = super(ProfileForm, self).save()
