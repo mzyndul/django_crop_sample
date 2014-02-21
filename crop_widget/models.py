@@ -1,7 +1,7 @@
 from django.db import models
 
 
-AVATAR_SIZE = (150, 150)
+AVATAR_SIZE = (300, 100)
 
 
 class Profile(models.Model):

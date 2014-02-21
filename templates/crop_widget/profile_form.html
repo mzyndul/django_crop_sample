@@ -6,11 +6,36 @@
 {% block extrajs %}
   <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.imgareaselect.pack.js"></script>
   <script>
+        SCALE = 1;
+        ORYGINAL_IMAGE_WIDTH = 0;
+        CROP_IMAGE_INSTANCE = null;
+
         function crop_change(img, selection){
-            $('#id_avatar_x').val(selection.x1);
-            $('#id_avatar_y').val(selection.y1);
-            $('#id_avatar_width').val(selection.width);
-            $('#id_avatar_height').val(selection.height);
+            var x1=Math.round(selection.x1 * SCALE);
+            var y1=Math.round(selection.y1 * SCALE);
+            var x2=Math.round(selection.width * SCALE);
+            var y2=Math.round(selection.height * SCALE);
+
+            $('#id_avatar_x').val(x1);
+            $('#id_avatar_y').val(y1);
+            $('#id_avatar_width').val(x2);
+            $('#id_avatar_height').val(y2);
+        }
+        $( window ).resize(function(){update_scale();});
+
+        function update_scale(){
+            if (ORYGINAL_IMAGE_WIDTH==0)
+                ORYGINAL_IMAGE_WIDTH = $('img#profile_image').width();
+            var image_width = ORYGINAL_IMAGE_WIDTH;
+            var screen_width = $(window).width();
+            if (image_width>screen_width){
+                SCALE = image_width/screen_width;
+                $('#profile_image').attr('width', screen_width);
+            }else{
+                $('#profile_image').attr('width', '');
+            }
+            if (CROP_IMAGE_INSTANCE)
+                crop_change(true, CROP_IMAGE_INSTANCE.getSelection());
         }
 
         function readImage(input) {
@@ -20,19 +45,21 @@
                     $('#crop_image').css('display', '');
                      $('#profile_image').attr( "src", "" );
                      $('#profile_image').attr( "src", e.target.result );
-
+                     ORYGINAL_IMAGE_WIDTH = $('img#profile_image').width();
                      var mw = Math.min($('img#profile_image').width(), $('img#profile_image').height());
-
+                     CROP_IMAGE_INSTANCE = null;
+                     update_scale();
                      var x1 = ($('img#profile_image').width()-mw)/2;
                      var y1 =($('img#profile_image').height()-mw)/2;
-                     $('img#profile_image').imgAreaSelect({
+                     CROP_IMAGE_INSTANCE = $('img#profile_image').imgAreaSelect({
                          onSelectChange: crop_change,
                          handles: true,
-                         aspectRatio: '1:1',
+                         aspectRatio: '{{ aspect_ratio }}',
                          x1: x1,
                          y1: y1,
                          x2: x1+mw,
-                         y2: y1+mw
+                         y2: y1+mw,
+                         instance: true
                          //onSelectEnd: someFunction
                      });
                 };
@@ -47,14 +74,29 @@
                 readImage( this );
             });
             {% if object %}
-                $('img#profile_image').imgAreaSelect({
+                ORYGINAL_IMAGE_WIDTH = $('img#profile_image').width();
+                update_scale();
+
+                var x1 = {{ profile.avatar_x }};
+                var y1 = {{ profile.avatar_y }};
+                var x2 = {{ profile.avatar_x }}+{{ profile.avatar_width }};
+                var y2 = {{ profile.avatar_y }}+{{ profile.avatar_height }};
+                if (SCALE!=1){
+                    x1/=SCALE;
+                    y1/=SCALE;
+                    x2/=SCALE;
+                    y2/=SCALE;
+                }
+
+                CROP_IMAGE_INSTANCE = $('img#profile_image').imgAreaSelect({
                      onSelectChange: crop_change,
                      handles: true,
-                     aspectRatio: '1:1',
-                     x1: {{ profile.avatar_x }},
-                     y1: {{ profile.avatar_y }},
-                     x2: {{ profile.avatar_x }}+{{ profile.avatar_width }},
-                     y2: {{ profile.avatar_y }}+{{ profile.avatar_height }}
+                     aspectRatio: '{{ aspect_ratio }}',
+                     x1: x1,
+                     y1: y1,
+                     x2: x2,
+                     y2: y2,
+                     instance: true
                      //onSelectEnd: someFunction
                  });
             {% endif %}
